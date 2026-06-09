@@ -1,0 +1,86 @@
+{
+  "agent_name": "Froyo Agent",
+  "description": "Helps with answering froyo products, allergen, ingredient, recipe, customer, order, sales related questions",
+  "project_id": "codevipasana-4",
+  "dataset": "froyo_data",
+  "status": "PUBLISHED",
+  "published_date": "2026-06-07",
+
+  "knowledge_sources": [
+    {
+      "table": "allergen",
+      "description": "Contains allergen names that may be present in froyo ingredients",
+      "columns": ["allergen_name"]
+    },
+    {
+      "table": "consistsof",
+      "description": "Maps froyo products to their ingredients",
+      "columns": ["product_id", "ingredient_id"]
+    },
+    {
+      "table": "containsallergen",
+      "description": "Maps ingredients to allergens they contain",
+      "columns": ["ingredient_id", "allergen_name"]
+    },
+    {
+      "table": "ingredient",
+      "description": "Detailed ingredient specifications including purity and chemical properties",
+      "columns": ["ingredient_id", "ingredient_name", "purity", "moisture_content", "ph_range", "specific_gravity_range"]
+    },
+    {
+      "table": "product",
+      "description": "Froyo product catalog with category and stability information",
+      "columns": ["product_id", "product_name", "category", "stability"]
+    },
+    {
+      "table": "suppliedby",
+      "description": "Maps ingredients to their suppliers",
+      "columns": ["ingredient_id", "supplier_id"]
+    },
+    {
+      "table": "supplier",
+      "description": "Supplier information including facility grades and production sites",
+      "columns": ["supplier_id", "supplier_name", "production_site_id", "facility_grade"]
+    },
+    {
+      "table": "orders",
+      "description": "Customer order history with dates and total amounts",
+      "columns": ["order_id", "customer_id", "order_date", "total_amount"]
+    },
+    {
+      "table": "order_items",
+      "description": "Individual line items within each customer order",
+      "columns": ["order_item_id", "order_id", "product_id", "quantity", "unit_price"]
+    },
+    {
+      "table": "customer_allergen_data",
+      "description": "Customer allergy profiles and registered allergen sensitivities",
+      "columns": ["customer_id", "customer_name", "allergen_name"]
+    }
+  ],
+
+  "instructions": "1. Project Context\nProject ID: codevipasana-4\nDomain: This project is centralized around Froyo, a brand of frozen yogurt.\nData: All froyo, customer, order related information is stored in BigQuery froyo_data dataset.\nContext: Use Data Agent Kit skills wherever possible.\n\n2. Execution & Data Processing Rules\nCRITICAL RULE - Structured Specs: The semantic and structured information extracted from the PDFs is available in a BigQuery dataset named froyo_data.\nCRITICAL RULE - Customer Data: Existing Froyo customer data resides in BigQuery in the tables customers_allergen_data.\nCRITICAL RULE - Sales Data: Sales data is present in tables orders and order_items.\nCRITICAL RULE - General: When referencing a dataset, use it with the dataset ID (froyo_data). For example: froyo_data.orders.",
+
+  "test_queries": [
+    {
+      "query": "Does midnight swirl contain any allergen?",
+      "expected_tables": ["product", "consistsof", "ingredient", "containsallergen"],
+      "expected_result": "Soy allergen identified"
+    },
+    {
+      "query": "I want to see the top 5 most popular products purchased by customers who have a registered Dairy allergy.",
+      "expected_tables": ["orders", "order_items", "product", "customer_allergen_data"],
+      "expected_result": "Top 5 products table"
+    },
+    {
+      "query": "Forecast the sales volume of our top non-dairy products for the next 30 days based on historical data.",
+      "expected_tables": ["orders", "order_items", "product", "containsallergen"],
+      "expected_result": "BQML forecast results with chart"
+    },
+    {
+      "query": "What will be the top most selling product of 2026?",
+      "expected_tables": ["orders", "order_items", "product"],
+      "expected_result": "Sales forecast for 2026"
+    }
+  ]
+}
