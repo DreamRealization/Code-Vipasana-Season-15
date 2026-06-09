@@ -1,0 +1,93 @@
+name: Validate Repository Structure
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate Codelab Files
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Validate Required Files Exist
+      run: |
+        echo "🔍 Validating repository structure..."
+
+        # Check all required files exist
+        files=(
+          "README.md"
+          "codelab-1-dark-data/README.md"
+          "codelab-1-dark-data/setup.sh"
+          "codelab-2-alloydb-federation/README.md"
+          "codelab-2-alloydb-federation/setup_alloydb.sh"
+          "codelab-2-alloydb-federation/federation.sql"
+          "codelab-3-agent-app/README.md"
+          "codelab-3-agent-app/tools.yaml"
+          "codelab-3-agent-app/deploy.sh"
+          "codelab-3-agent-app/app-nobill.py"
+          "codelab-4-evaluation/README.md"
+          "codelab-4-evaluation/agent_eval.py"
+          "codelab-4-evaluation/eval_results.md"
+          "codelab-5-data-agents/README.md"
+          "codelab-5-data-agents/GEMINI.md"
+          "codelab-5-data-agents/load_tables.sh"
+          "codelab-5-data-agents/bq_agent_config.json"
+        )
+
+        missing=0
+        for file in "${files[@]}"; do
+          if [ -f "$file" ]; then
+            echo "  ✅ $file"
+          else
+            echo "  ❌ MISSING: $file"
+            missing=$((missing + 1))
+          fi
+        done
+
+        if [ $missing -gt 0 ]; then
+          echo "❌ $missing files missing!"
+          exit 1
+        fi
+        echo "✅ All required files present!"
+
+    - name: Validate Python Syntax
+      run: |
+        echo "🐍 Validating Python files..."
+        python -m py_compile codelab-3-agent-app/app-nobill.py && echo "  ✅ app-nobill.py"
+        python -m py_compile codelab-4-evaluation/agent_eval.py && echo "  ✅ agent_eval.py"
+        echo "✅ Python syntax valid!"
+
+    - name: Validate YAML Syntax
+      run: |
+        pip install pyyaml -q
+        echo "📄 Validating YAML files..."
+        python -c "import yaml; yaml.safe_load(open('codelab-3-agent-app/tools.yaml'))" && echo "  ✅ tools.yaml"
+        echo "✅ YAML syntax valid!"
+
+    - name: Validate JSON Syntax
+      run: |
+        echo "📋 Validating JSON files..."
+        python -m json.tool codelab-5-data-agents/bq_agent_config.json > /dev/null && echo "  ✅ bq_agent_config.json"
+        echo "✅ JSON syntax valid!"
+
+    - name: Validation Summary
+      run: |
+        echo ""
+        echo "================================"
+        echo "  VALIDATION COMPLETE ✅"
+        echo "================================"
+        echo "  Codelabs: 5"
+        echo "  Files validated: 17"
+        echo "  Status: All checks passed"
+        echo "================================"
